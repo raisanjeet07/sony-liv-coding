@@ -23,14 +23,24 @@ public class SonyLivCodingApplication {
 	@Bean
 	CommandLineRunner run(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder){
 		return args -> {
-			Role admin = roleRepository.save(new Role("Admin".toUpperCase()));
-			roleRepository.save(new Role("Viewer".toUpperCase()));
-			roleRepository.save(new Role("Editor".toUpperCase()));
+			Role admin = addRole("Admin", roleRepository);
+			addRole("Viewer", roleRepository);
+			addRole("Editor", roleRepository);
 			Set<Role> roles = new HashSet<>();
 			roles.add(admin);
 			ApplicationUser user = new ApplicationUser(1, "admin", passwordEncoder.encode("admin"), roles);
 			userRepository.save(user);
 		};
+	}
+
+	private Role addRole(String strAdmin, RoleRepository roleRepository){
+		Role role = new Role(strAdmin.toUpperCase());
+		if(!roleRepository.findByAuthority(strAdmin).isPresent()){
+			role = roleRepository.saveAndFlush(role);
+		}else{
+			role = roleRepository.findByAuthority(strAdmin).get();
+		}
+		return role;
 	}
 
 }
